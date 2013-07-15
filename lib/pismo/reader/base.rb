@@ -64,6 +64,13 @@ module Pismo
         end
       end
 
+      UNICODE_SUBS = {
+        " " => [[0xE2, 0x80, 0x89].pack("C*")],
+        "'" => [[0xE2, 0x80, 0x99].pack("C*"), [0xE2, 0x80, 0x98].pack("C*")],
+        '"' => [[0xE2, 0x80, 0x9c].pack("C*"), [0xE2, 0x80, 0x9d].pack("C*")],
+        "." => [[0xE2, 0x80, 0xf6].pack("C*")]
+      }
+
       def build_doc
         @content = {}
 
@@ -78,14 +85,12 @@ module Pismo
 
         # Get rid of bullshit "smart" quotes and other Unicode nonsense
         @raw_content.force_encoding("ASCII-8BIT") if RUBY_VERSION > "1.9"
-        @raw_content.gsub!("\xe2\x80\x89", " ")
-        @raw_content.gsub!("\xe2\x80\x99", "'")
-        @raw_content.gsub!("\xe2\x80\x98", "'")
-        @raw_content.gsub!("\xe2\x80\x9c", '"')
-        @raw_content.gsub!("\xe2\x80\x9d", '"')
-        @raw_content.gsub!("\xe2\x80\xf6", '.')
+        UNICODE_SUBS.each do |sub, sequences|
+          sequences.each do |seq|
+            @raw_content.gsub! seq, sub
+          end
+        end
         @raw_content.force_encoding("UTF-8") if RUBY_VERSION > "1.9"
-
 
         # Sanitize the HTML
         @raw_content = Sanitize.clean(@raw_content,
