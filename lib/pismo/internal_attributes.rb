@@ -409,7 +409,7 @@ module Pismo
 
     def twitterLinkColor
       @twitterLinkColor ||= begin
-        twitterLinkColor = @doc.search('style').first.content.match(/\.u-textUserColor\s+{\s+color:\s+(\S+)/m)[1]
+        twitterLinkColor = @doc.search('style').first.content.match(/\.u-textUserColor\s+{\s+color:\s+(\S+)/m)[1] rescue nil
         twitterLinkColor
       end
     end
