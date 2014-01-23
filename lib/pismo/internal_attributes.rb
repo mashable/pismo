@@ -149,6 +149,14 @@ module Pismo
       'a.g-hovercard'
     ]
 
+    VINE_NAME_MATCHES = [
+      'p.username a'
+    ]
+
+    VINE_URL_MATCHES = [
+      ['p.username a', lambda { |el| "http://vine.co#{el.attr('href')}" }]
+    ]
+
     def titles
       @all_titles ||= begin
         [ @doc.match(TITLE_MATCHES), html_title ].flatten.compact.uniq
@@ -358,6 +366,72 @@ module Pismo
           url: @doc.match(YOUTUBE_CHANNEL_URL_MATCHES).first
         }
         youtube
+      end
+    end
+
+    # Returns information specific to Vine URLs
+    def vine
+      @vine ||= begin
+        vine = {
+          name: @doc.match(VINE_NAME_MATCHES).first,
+          url: @doc.match(VINE_URL_MATCHES).first
+        }
+        vine
+      end
+    end
+
+    # Parse and sanitize tweet
+    def tweet
+      @tweet ||= begin
+        frag = @doc.css('p.tweet-text').first
+
+        # Strip extraneous information
+        frag.search('.//@*').reject{|a|%w{class href}.include? a.name}.map(&:remove)
+        frag.search('.//span').map{|s|s.replace(s.content)}
+        frag.search('.//a').map{|s|s.inner_html = s.content}
+
+        # Remove attributes and expand URLs on @replies
+        replies = frag.search('.//*[contains(@class,"twitter-atreply")]')
+        replies.search('./@class').map{|r|r.value = 'username'}
+        replies.map{|r|r.attributes['href'].value = "http://twitter.com" + r.attributes['href']}
+
+        # Remove attributes and expand URLs on #hashtags
+        hashtags = frag.search('.//*[contains(@class,"twitter-hashtag")]')
+        hashtags.search('./@class').map{|h|h.value = 'hashtag'}
+        hashtags.map{|h|h.attributes['href'].value = "http://twitter.com" + h.attributes['href']}
+
+        # Remove attributes on remaining links
+        frag.search('.//a[not(@class="username") and not(@class="hashtag")]/@*').map{|a|a.remove unless a.name=='href'}
+
+        frag.inner_html
+      end
+    end
+
+    def twitterLinkColor
+      @twitterLinkColor ||= begin
+        twitterLinkColor = @doc.search('style').first.content.match(/\.u-textUserColor\s+{\s+color:\s+(\S+)/m)[1]
+        twitterLinkColor
+      end
+    end
+
+    def twitterImage
+      @twitterImage ||= begin
+        twitterImage = @doc.search('//a[contains(@class,"media-thumbnail")]/*/img').attr('src').value
+        twitterImage
+      end
+    end
+
+    # Returns information specific to Twitter URLs
+    def twitter
+      @twitter ||= begin
+        twitter = {
+          linkColor: twitterLinkColor,
+          tweet: tweet,
+          image: twitterImage,
+          handle: @doc.search('//div[contains(@class,"tweet")]/@data-screen-name').first.value,
+          name: @doc.search('//div[contains(@class,"tweet")]/@data-name').first.value,
+          avatar: @doc.search('//img[contains(@class,"avatar")]/@src').first.value
+        }
       end
     end
 

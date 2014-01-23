@@ -13,10 +13,12 @@ module Pismo
         content_type 'application/json'
         doc = Pismo::Document.new(params[:q])
         {
+          description: doc.description,
+          twitter: doc.twitter,
+          youtube: doc.youtube,
           title: doc.title,
           image: doc.image,
-          description: doc.description,
-          youtube: doc.youtube
+          vine: doc.vine
         }.to_json
       end
     end
