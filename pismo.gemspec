@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency(%q<shoulda>, [">= 0"])
   s.add_development_dependency(%q<mocha>, [">= 0"])
-  s.add_development_dependency(%q<rake>, [">= 0"])  
+  s.add_development_dependency(%q<rake>, [">= 0"])
   s.add_dependency(%q<awesome_print>, [">= 0"])
   s.add_dependency(%q<nokogiri>, [">= 0"])
   s.add_dependency(%q<sanitize>, [">= 0"])
@@ -32,5 +32,7 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<phrasie>, [">= 0.1.4"])
   s.add_dependency(%q<fastimage>, [">= 1"])
   s.add_dependency(%q<htmlentities>)
+  s.add_dependency(%q<sinatra>)
+  s.add_dependency(%q<json>)
 
 end

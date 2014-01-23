@@ -137,6 +137,18 @@ module Pismo
       ['link[@rel="icon"]', lambda { |el| el.attr('href') }]
     ]
 
+    IMAGE_MATCHES = [
+      ['meta[@property="og:image"]', lambda { |el| el.attr('content') } ]
+    ]
+
+    YOUTUBE_CHANNEL_URL_MATCHES = [
+      ['//span[@itemprop="author"]/link[@itemprop="url"]', lambda { |el| el.attr('href') }]
+    ]
+
+    YOUTUBE_CHANNEL_NAME_MATCHES = [
+      'a.g-hovercard'
+    ]
+
     def titles
       @all_titles ||= begin
         [ @doc.match(TITLE_MATCHES), html_title ].flatten.compact.uniq
@@ -327,6 +339,25 @@ module Pismo
           url = URI.join(@url , url).to_s
         end
         url
+      end
+    end
+
+    # Returns URL to the site's specified lead image
+    def image
+      @image ||= begin
+        url = @doc.match(IMAGE_MATCHES).first
+        url
+      end
+    end
+
+    # Returns information specific to YouTube URLs
+    def youtube
+      @youtube ||= begin
+        youtube = {
+          name: @doc.match(YOUTUBE_CHANNEL_NAME_MATCHES).first,
+          url: @doc.match(YOUTUBE_CHANNEL_URL_MATCHES).first
+        }
+        youtube
       end
     end
 
