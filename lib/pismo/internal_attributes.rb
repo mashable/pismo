@@ -404,6 +404,8 @@ module Pismo
         frag.search('.//a[not(@class="username") and not(@class="hashtag")]/@*').map{|a|a.remove unless a.name=='href'}
 
         frag.inner_html
+      rescue
+        nil
       end
     end
 
@@ -411,6 +413,8 @@ module Pismo
       @twitterLinkColor ||= begin
         twitterLinkColor = @doc.search('style').first.content.match(/\.u-textUserColor\s+{\s+color:\s+(\S+)/m)[1] rescue nil
         twitterLinkColor
+      rescue
+        nil
       end
     end
 
@@ -418,6 +422,8 @@ module Pismo
       @twitterImage ||= begin
         twitterImage = @doc.search('//a[contains(@class,"media-thumbnail")]/*/img').attr('src').value
         twitterImage
+      rescue
+        nil
       end
     end
 
@@ -432,6 +438,8 @@ module Pismo
           name: @doc.search('//div[contains(@class,"tweet")]/@data-name').first.value,
           avatar: @doc.search('//img[contains(@class,"avatar")]/@src').first.value
         }
+      rescue
+        nil
       end
     end
 
