@@ -19,6 +19,7 @@ module Pismo
           twitter:      doc.twitter,
           youtube:      doc.youtube,
           ustream:      doc.ustream,
+          sitename:     doc.sitename,
           title:        doc.title,
           image:        doc.image,
           vine:         doc.vine
