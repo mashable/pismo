@@ -141,6 +141,10 @@ module Pismo
       ['meta[@property="og:image"]', lambda { |el| el.attr('content') } ]
     ]
 
+    SITENAME_MATCHES = [
+      ['meta[@property="og:site_name"]', lambda { |el| el.attr('content') } ]
+    ]
+
     YOUTUBE_CHANNEL_URL_MATCHES = [
       ['//span[@itemprop="author"]/link[@itemprop="url"]', lambda { |el| el.attr('href') }]
     ]
@@ -159,13 +163,21 @@ module Pismo
 
     def titles
       @all_titles ||= begin
-        [ @doc.match(TITLE_MATCHES), html_title ].flatten.compact.uniq
+        [ @doc.match(TITLE_MATCHES), html_title ].flatten.compact.reject(&:empty?).uniq
       end
     end
 
     # Returns the title of the page/content - attempts to strip site name, etc, if possible
     def title
       titles.first
+    end
+
+    # Returns the sitename (primitive)
+    def sitename
+      @sitename ||= begin
+        sitename = @doc.match(SITENAME_MATCHES).first
+        sitename
+      end
     end
 
     # HTML title
@@ -438,6 +450,51 @@ module Pismo
           name: @doc.search('//div[contains(@class,"tweet")]/@data-name').first.value,
           avatar: @doc.search('//img[contains(@class,"avatar")]/@src').first.value
         }
+      rescue
+        nil
+      end
+    end
+
+    def brittle_instagram
+      @brittle_instagram ||= begin
+        data = JSON.parse(@doc.search('script').reject{|s|s.attributes['src']}.last.content.gsub(/^window\._sharedData =/,'').gsub(';',''))['entry_data']['DesktopPPage'][0]['media']
+        brittleData = {
+          username: data['owner']['username'],
+          caption: data['caption']
+        }
+      rescue
+        nil
+      end
+    end
+
+    def instagram
+      @instagram ||= begin
+        instagram = {
+          video: @doc.match('meta[@property="og:video"]').first,
+          brittle: brittle_instagram
+        }
+      rescue
+        nil
+      end
+    end
+
+    def ustream
+      @ustream ||= begin
+        ustream = {
+          title: @doc.match('meta[@property="og:title"]').first,
+          description: @doc.match('.description .moreInfo').first,
+          channel_name: @doc.match('.title a[data-content-type="channel"]').first,
+          channel_url: 'http://ustream.tv' + @doc.match([['.title a[data-content-type="channel"]',lambda{|el|el.attr('href')}]]).first
+        }
+      rescue
+        nil
+      end
+    end
+
+    def soundcloud
+      return nil unless Pismo::Configuration.options[:soundcloud_client_id] && @url.match(/soundcloud\.com/)
+      @souncloud ||= begin
+        JSON.parse(open("http://api.soundcloud.com/resolve.json?url=#{@url}&client_id=#{Pismo::Configuration.options[:soundcloud_client_id]}").read)
       rescue
         nil
       end

@@ -9,6 +9,7 @@ require 'phrasie'
 require 'htmlentities'
 
 $: << File.dirname(__FILE__)
+require 'pismo/configuration'
 require 'pismo/server'
 require 'pismo/document'
 require 'pismo/reader'
