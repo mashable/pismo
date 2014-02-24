@@ -11,6 +11,8 @@ module Pismo
 
       get_or_post '/' do
         content_type 'application/json'
+        headers 'Cache-Control' => "no-cache",
+          'X-Ignore-Cookie' => '0'
         doc = Pismo::Document.new(params[:q])
         {
           description:  doc.description,
