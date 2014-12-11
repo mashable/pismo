@@ -8,6 +8,9 @@ module Pismo
     BRIGHTCOVE_API_URL = "https://api.brightcove.com/services/library?command=find_video_by_id"
     VIMEO_API_URL = "http://vimeo.com/api/v2/video/"
 
+    FB_GET_TOKEN_URL = "https://graph.facebook.com/oauth/access_token"
+    FB_API_URL = "https://graph.facebook.com/v2.0/"
+
     class App < Sinatra::Base
       def self.get_or_post(url,&block)
         get(url,&block)
@@ -58,6 +61,26 @@ module Pismo
         data[0].to_json
       end
 
+      def extract_facebook_data(query)
+        vid = query.split('-')[1]
+        access_params = {
+          client_id: Pismo::Configuration.options[:fb_app_id],
+          client_secret: Pismo::Configuration.options[:fb_secret],
+          grant_type: 'client_credentials'
+        }
+        access_token = open("#{FB_GET_TOKEN_URL}?#{access_params.to_query}").read
+
+        unencoded_url = "#{FB_API_URL}#{vid}?#{access_token}"
+        request_url = URI.encode unencoded_url
+        data =
+          begin
+            resp = JSON.parse open(request_url, "User-Agent" => "MashableBot").read
+          rescue
+            {}
+          end
+        data.to_json
+      end
+
       get_or_post '/' do
         content_type 'application/json'
         headers 'Cache-Control' => "no-cache",
@@ -69,6 +92,8 @@ module Pismo
           attrs = extract_brightcove_data query
         elsif query.match(/vimeo/)
           attrs = extract_vimeo_data query
+        elsif query.match(/fb/)
+          attrs = extract_facebook_data query
         else
           doc = Pismo::Document.new query
           attrs = {
