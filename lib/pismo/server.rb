@@ -103,6 +103,7 @@ module Pismo
             twitter:      doc.twitter,
             youtube:      doc.youtube,
             ustream:      doc.ustream,
+            livestream:   doc.livestream,
             sitename:     doc.sitename,
             title:        doc.title,
             image:        doc.image,

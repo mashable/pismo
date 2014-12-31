@@ -467,6 +467,15 @@ module Pismo
       end
     end
 
+    def livestream
+      return nil unless @url.match(/livestream\.com/)
+      @livestream ||= begin
+        livestream = JSON.parse(@doc.search('script').select{|s| s.content.match(/window\.config/)}.first.content.gsub(/^window\.config = /,'').gsub(/\;$/,''))
+      rescue
+        nil
+      end
+    end
+
     def instagram
       @instagram ||= begin
         instagram = {
