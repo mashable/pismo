@@ -4,12 +4,12 @@ require 'sinatra/base'
 
 module Pismo
   module Server
-    VINE_API_URL = "https://api.vineapp.com/timelines/posts/s/"
     BRIGHTCOVE_API_URL = "https://api.brightcove.com/services/library?command=find_video_by_id"
-    VIMEO_API_URL = "http://vimeo.com/api/v2/video/"
-
-    FB_GET_TOKEN_URL = "https://graph.facebook.com/oauth/access_token"
     FB_API_URL = "https://graph.facebook.com/v2.0/"
+    FB_GET_TOKEN_URL = "https://graph.facebook.com/oauth/access_token"
+    TWITCH_API_URL = "https://api.twitch.tv/kraken/channels/"
+    VIMEO_API_URL = "http://vimeo.com/api/v2/video/"
+    VINE_API_URL = "https://api.vineapp.com/timelines/posts/s/"
 
     class App < Sinatra::Base
       def self.get_or_post(url,&block)
@@ -40,6 +40,18 @@ module Pismo
           token: Pismo::Configuration.options[:brightcove_read_token]
         }
         request_url = "#{BRIGHTCOVE_API_URL}&#{params.to_query}"
+        data =
+          begin
+            resp = JSON.parse open(request_url, "User-Agent" => "MashableBot").read
+          rescue
+            {}
+          end
+        data.to_json
+      end
+
+      def extract_twitch_data(query)
+        twitch_id = query.split("/").pop
+        request_url = "#{TWITCH_API_URL}#{twitch_id}"
         data =
           begin
             resp = JSON.parse open(request_url, "User-Agent" => "MashableBot").read
@@ -88,6 +100,8 @@ module Pismo
         query = params[:q]
         if query.match(/vine\.co/)
           attrs = extract_vine_data query
+        elsif query.match(/twitch\.tv/)
+          attrs = extract_twitch_data query
         elsif query.match(/bcove/)
           attrs = extract_brightcove_data query
         elsif query.match(/vimeo/)
