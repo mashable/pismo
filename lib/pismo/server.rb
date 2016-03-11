@@ -106,8 +106,6 @@ module Pismo
           attrs = extract_brightcove_data query
         elsif query.match(/vimeo/)
           attrs = extract_vimeo_data query
-        elsif query.match(/fb/)
-          attrs = extract_facebook_data query
         else
           doc = Pismo::Document.new query
           attrs = {
