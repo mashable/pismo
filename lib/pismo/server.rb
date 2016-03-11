@@ -80,12 +80,11 @@ module Pismo
           client_secret: Pismo::Configuration.options[:fb_secret],
           grant_type: 'client_credentials'
         }
-        access_token = open("#{FB_GET_TOKEN_URL}?#{access_params.to_query}").read
-
-        unencoded_url = "#{FB_API_URL}#{vid}?#{access_token}"
-        request_url = URI.encode unencoded_url
         data =
           begin
+            access_token = open("#{FB_GET_TOKEN_URL}?#{access_params.to_query}").read
+            unencoded_url = "#{FB_API_URL}#{vid}?#{access_token}"
+            request_url = URI.encode unencoded_url
             resp = JSON.parse open(request_url, "User-Agent" => "MashableBot").read
           rescue
             {}
